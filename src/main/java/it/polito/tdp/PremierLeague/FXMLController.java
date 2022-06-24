@@ -5,9 +5,13 @@
 package it.polito.tdp.PremierLeague;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.PremierLeague.model.Adiacenza;
 import it.polito.tdp.PremierLeague.model.Model;
+import it.polito.tdp.PremierLeague.model.Player;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -44,17 +48,70 @@ public class FXMLController {
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	this.txtResult.clear();
+    	//prendi l'input
+    	Double x;
+    	try {
+    		x = Double.parseDouble(this.txtGoals.getText());
+    		if( x < 0 || x >= 1) {
+    			this.txtResult.setText("Devi inserire un numero decimale compreso fra 0 e 1 (escluso)");
+    			return;
+    		}
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Devi inserire un valore numerico decimale");
+    		return;
+    	}
+    	//se sono qui posso proseguire con la creazione del grafo
+    	this.model.creaGrafo(x);
+    	this.txtResult.setText("Grafo creato!\n");
+    	this.txtResult.appendText("#VERTICI: "+this.model.nVertices()+"\n");
+    	this.txtResult.appendText("#ARCHI: "+this.model.nArchi()+"\n");
 
     }
 
     @FXML
     void doDreamTeam(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	//controlla che il grafo sia creato
+    	if(!this.model.isGraphCreated()) {
+    		this.txtResult.setText("Devi prima creare il grafico");
+    		return;
+    	}
+    	int k;
+    	try {
+    		k = Integer.parseInt(this.txtK.getText());
+    		if( k >= 5) {
+    			this.txtResult.setText("Devi inserire un numero (positivo) maggiore di 5");
+    			return;
+    		}
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Devi inserire un valore numerico intero");
+    		return;
+    	}
+    	//se sono qui posso avviare la ricorsione
+    	List<Player> dreamTeam = new ArrayList<>(this.model.createDreamTeam(k));
+    	for(Player p : dreamTeam) {
+    		this.txtResult.appendText(p +"\n");
+    	}
+    	this.txtResult.appendText("Grado di titolarità del dream team: "+this.model.bestTitolarita()+"\n"); 
     }
 
     @FXML
     void doTopPlayer(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	//controlla che il grafo sia creato
+    	if(!this.model.isGraphCreated()) {
+    		this.txtResult.setText("Devi prima creare il grafico");
+    		return;
+    	}
+    	//se sono qui posso proseguire
+    	Player top = this.model.getTopPlayer();
+    	this.txtResult.setText("TOP PLAYER: "+top+"\n\n");
+    	this.txtResult.appendText("AVVERSARI BATTUTI:\n");
+    	List<Adiacenza> opponents = new ArrayList<>(this.model.getOpponents(top));
+    	for(Adiacenza a : opponents) {
+    		this.txtResult.appendText(a.getP2()+" | "+a.getPeso()+"\n");
+    	}
     }
 
     @FXML // This method is called by the FXMLLoader when initialization is complete
